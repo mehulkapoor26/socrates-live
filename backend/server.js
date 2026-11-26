@@ -3,6 +3,7 @@ import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 5050;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
@@ -68,7 +69,38 @@ function findStarterIssue(code = "") {
   };
 }
 
-app.post("/api/hint", (req, res) => {
+async function generateGeminiHint({ code, question, hintLevel, fallback }) {
+  if (!GEMINI_API_KEY) return null;
+
+  const prompt = `
+You are SocratesLive, a strict Socratic coding mentor.
+Rules:
+1. NEVER write full solution code or give the final answer directly.
+2. Give ONE short hint/question (max 2 short sentences) in simple Hinglish.
+3. Focus around line ${fallback.lineNumber} (${fallback.issueType}).
+4. Hint level is ${hintLevel} (1 = gentle nudge, 2 = concept/edge-case check, 3 = sharper targeted question).
+
+Student doubt: ${question || "Help me find why this has an issue."}
+Code:
+${code}
+`.trim();
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }]
+    })
+  });
+
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  return text || null;
+}
+
+app.post("/api/hint", async (req, res) => {
   const { code = "", question = "", hintLevel = 1 } = req.body || {};
 
   if (!code.trim() && !question.trim()) {
@@ -78,32 +110,34 @@ app.post("/api/hint", (req, res) => {
   }
 
   const found = findStarterIssue(code);
+  const blockedDirectAnswer = isAskingForDirectSolution(question);
 
-  if (isAskingForDirectSolution(question)) {
-    return res.json({
-      blockedDirectAnswer: true,
-      lineNumber: found.lineNumber,
-      hintLevel,
-      hint: `Seedha solution nahi milega 🙂 — Level ${hintLevel} hint: ${found.hint}`,
-      nextPrompt: "Pehle khud ek chhota badlav karke try karo, phir batao kya hua."
-    });
+  let aiHint = null;
+  try {
+    aiHint = await generateGeminiHint({ code, question, hintLevel, fallback: found });
+  } catch (_err) {
+    aiHint = null;
   }
 
+  const baseText = aiHint || found.hint;
+  const hint = blockedDirectAnswer
+    ? `Seedha solution nahi milega — ${baseText}`
+    : baseText;
+
   return res.json({
-    blockedDirectAnswer: false,
+    blockedDirectAnswer,
     lineNumber: found.lineNumber,
+    issueType: found.issueType,
     hintLevel,
-    hint: `Level ${hintLevel} Hint: ${found.hint}`,
-    nextPrompt: question.trim()
-      ? `Tumne poocha: "${question.trim()}" — iske hisaab se pehla step kya hona chahiye?`
-      : "Is line ko sudharne ke baad output mein kya badlav aana chahiye?"
+    hint,
+    nextPrompt: "Pehle khud ek chhota badlav karke try karo, phir batao kya hua."
   });
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "SocratesLive Base" });
+  res.json({ status: "ok", service: "SocratesLive Base", geminiEnabled: Boolean(GEMINI_API_KEY) });
 });
 
 app.listen(PORT, () => {
-  console.log(`SocratesLive base backend running on http://localhost:${PORT}`);
+  console.log(`SocratesLive backend running on http://localhost:${PORT}`);
 });
