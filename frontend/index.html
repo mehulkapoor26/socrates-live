@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SocratesLive — Base Prototype</title>
+  <style>
+    * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 24px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    h1 { margin: 0; font-size: 24px; color: #38bdf8; }
+    p.sub { margin: 4px 0 0; color: #94a3b8; font-size: 14px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+    }
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; }
+    textarea, input {
+      width: 100%;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 14px;
+    }
+    textarea.code-input {
+      min-height: 220px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      line-height: 1.5;
+    }
+    .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    button {
+      background: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #0369a1; }
+    button.secondary { background: #334155; }
+    button.secondary:hover { background: #475569; }
+    .preview-lines {
+      margin-top: 12px;
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      max-height: 220px;
+      overflow: auto;
+    }
+    .line-item {
+      display: flex;
+      gap: 12px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .line-item.highlight {
+      background: rgba(239, 68, 68, 0.22);
+      border-left: 3px solid #ef4444;
+    }
+    .line-num { color: #64748b; user-select: none; min-width: 24px; }
+    .hint-box {
+      background: #0f172a;
+      border-left: 4px solid #38bdf8;
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #334155;
+      color: #f8fafc;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div>
+      <h1>SocratesLive — Base Starter</h1>
+      <p class="sub">No-spoiler Socratic hint + target line highlight base (ready for team modules)</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <label for="codeInput">Student Code</label>
+        <textarea id="codeInput" class="code-input">int count = 0;
+while (true) {
+  count++;
+}</textarea>
+
+        <div class="preview-lines" id="codePreview"></div>
+      </div>
+
+      <div class="card">
+        <label for="questionInput">Tumhara Doubt ya Request</label>
+        <input id="questionInput" type="text" placeholder="e.g., Mera loop kyun atak raha hai? (ya 'give me full code')" />
+
+        <div class="row">
+          <button id="getHintBtn">Get Socratic Hint</button>
+          <button id="resetLevelBtn" class="secondary">Reset Hint Level</button>
+        </div>
+
+        <div class="hint-box" id="hintOutput">
+          <span class="badge">Ready</span>
+          <div>Yahan tumhara Socratic hint aur line focus aayega.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const codeInput = document.getElementById("codeInput");
+    const questionInput = document.getElementById("questionInput");
+    const codePreview = document.getElementById("codePreview");
+    const hintOutput = document.getElementById("hintOutput");
+    const getHintBtn = document.getElementById("getHintBtn");
+    const resetLevelBtn = document.getElementById("resetLevelBtn");
+
+    let currentHighlightLine = 2;
+    let hintLevel = 1;
+
+    function renderCodePreview(activeLine) {
+      const lines = codeInput.value.split("\n");
+      codePreview.innerHTML = lines
+        .map((line, idx) => {
+          const num = idx + 1;
+          const cls = num === activeLine ? "line-item highlight" : "line-item";
+          const safeLine = line
+            .replace(/&/g, "&")
+            .replace(/</g, "<")
+            .replace(/>/g, ">");
+          return `<div class="${cls}"><span class="line-num">${num}</span><span>${safeLine || " "}</span></div>`;
+        })
+        .join("");
+    }
+
+    codeInput.addEventListener("input", () => renderCodePreview(currentHighlightLine));
+    renderCodePreview(currentHighlightLine);
+
+    resetLevelBtn.addEventListener("click", () => {
+      hintLevel = 1;
+      hintOutput.innerHTML = `<span class="badge">Level Reset</span><div>Hint level wapas 1 kar diya gaya hai.</div>`;
+    });
+
+    getHintBtn.addEventListener("click", async () => {
+      hintOutput.innerHTML = `<span class="badge">Thinking...</span><div>Hint nikaala ja raha hai...</div>`;
+      try {
+        const res = await fetch("http://localhost:5050/api/hint", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code: codeInput.value,
+            question: questionInput.value,
+            hintLevel
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          hintOutput.innerHTML = `<span class="badge">Error</span><div>${data.error || "Kuch gadbad hui"}</div>`;
+          return;
+        }
+        currentHighlightLine = data.lineNumber;
+        renderCodePreview(currentHighlightLine);
+
+        const tag = data.blockedDirectAnswer
+          ? "Direct Answer Blocked • No-Spoiler Active"
+          : `Line ${data.lineNumber} Highlighted • Hint Level ${data.hintLevel}`;
+
+        hintOutput.innerHTML = `
+          <span class="badge">${tag}</span>
+          <div><strong>${data.hint}</strong></div>
+          <div style="margin-top:8px; color:#94a3b8; font-size:13px;">${data.nextPrompt}</div>
+        `;
+        hintLevel = Math.min(hintLevel + 1, 3);
+      } catch (_err) {
+        hintOutput.innerHTML = `<span class="badge">Backend Offline</span><div>Pehle <code>node server.js</code> (port 5050) chala lo.</div>`;
+      }
+    });
+  </script>
+</body>
+</html>
