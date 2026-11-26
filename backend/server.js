@@ -14,14 +14,29 @@ function isAskingForDirectSolution(message = "") {
     "give me full code",
     "complete code",
     "write the whole code",
+    "write function",
+    "write code",
     "direct answer",
     "just give me the answer",
     "solve it for me",
+    "solution bata",
+    "answer dedo",
+    "code likh de",
     "poora code de",
     "seedha answer",
     "ans bata"
   ];
   return blockedPhrases.some((phrase) => text.includes(phrase));
+}
+
+function getLevelGuidance(level = 1) {
+  if (level <= 1) {
+    return "Level 1 (Gentle Nudge): Sirf kis line ya area ko dekhna hai, woh point out karo.";
+  }
+  if (level === 2) {
+    return "Level 2 (Logic/Edge Check): Condition, loop bound, ya edge case par sochne ko kaho.";
+  }
+  return "Level 3 (Sharp Question): Ek seedha sawaal poochho jo student ko khud next step par le jaye, par answer mat do.";
 }
 
 function findStarterIssue(code = "") {
@@ -78,7 +93,7 @@ Rules:
 1. NEVER write full solution code or give the final answer directly.
 2. Give ONE short hint/question (max 2 short sentences) in simple Hinglish.
 3. Focus around line ${fallback.lineNumber} (${fallback.issueType}).
-4. Hint level is ${hintLevel} (1 = gentle nudge, 2 = concept/edge-case check, 3 = sharper targeted question).
+4. ${getLevelGuidance(hintLevel)}
 
 Student doubt: ${question || "Help me find why this has an issue."}
 Code:
@@ -109,12 +124,18 @@ app.post("/api/hint", async (req, res) => {
     });
   }
 
+  const clampedLevel = Math.min(Math.max(Number(hintLevel) || 1, 1), 3);
   const found = findStarterIssue(code);
   const blockedDirectAnswer = isAskingForDirectSolution(question);
 
   let aiHint = null;
   try {
-    aiHint = await generateGeminiHint({ code, question, hintLevel, fallback: found });
+    aiHint = await generateGeminiHint({
+      code,
+      question,
+      hintLevel: clampedLevel,
+      fallback: found
+    });
   } catch (_err) {
     aiHint = null;
   }
@@ -128,14 +149,18 @@ app.post("/api/hint", async (req, res) => {
     blockedDirectAnswer,
     lineNumber: found.lineNumber,
     issueType: found.issueType,
-    hintLevel,
+    hintLevel: clampedLevel,
     hint,
     nextPrompt: "Pehle khud ek chhota badlav karke try karo, phir batao kya hua."
   });
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "SocratesLive Base", geminiEnabled: Boolean(GEMINI_API_KEY) });
+  res.json({
+    status: "ok",
+    service: "SocratesLive Base",
+    geminiEnabled: Boolean(GEMINI_API_KEY)
+  });
 });
 
 app.listen(PORT, () => {
