@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { analyzeSubmission } from "./analyzer.js";
 
 const app = express();
 const PORT = process.env.PORT || 5050;
@@ -69,7 +70,7 @@ function findStarterIssue(code = "") {
   };
 }
 
-async function generateGeminiHint({ code, question, hintLevel, fallback }) {
+async function generateGeminiHint({ code, question, hintLevel, primaryIssue, baseHint, mismatchNote }) {
   if (!GEMINI_API_KEY) return null;
 
   const prompt = `
@@ -77,10 +78,13 @@ You are SocratesLive, a strict Socratic coding mentor.
 Rules:
 1. NEVER write full solution code or give the final answer directly.
 2. Give ONE short hint/question (max 2 short sentences) in simple Hinglish.
-3. Focus around line ${fallback.lineNumber} (${fallback.issueType}).
+3. Focus around line ${primaryIssue.lineNumber ?? "unknown"} (${primaryIssue.issueType ?? "logic-review"}).
 4. Hint level is ${hintLevel} (1 = gentle nudge, 2 = concept/edge-case check, 3 = sharper targeted question).
+5. Use the local hint and any notes/code mismatch as context, but never turn them into the solution.
 
 Student doubt: ${question || "Help me find why this has an issue."}
+Local hint: ${baseHint}
+Notes/code mismatch: ${mismatchNote || "None detected."}
 Code:
 ${code}
 `.trim();
@@ -101,7 +105,10 @@ ${code}
 }
 
 app.post("/api/hint", async (req, res) => {
-  const { code = "", question = "", hintLevel = 1 } = req.body || {};
+  const {
+    code = "", notebookNotes = "", question = "", hintLevel = 1,
+    sessionId = null, sessionSummary = null
+  } = req.body || {};
 
   if (!code.trim() && !question.trim()) {
     return res.status(400).json({
@@ -109,28 +116,34 @@ app.post("/api/hint", async (req, res) => {
     });
   }
 
-  const found = findStarterIssue(code);
+  const analysis = analyzeSubmission({ code, notebookNotes });
+  const primaryIssue = analysis.issues?.[0] || findStarterIssue(code);
+  const baseHint = primaryIssue.hint || "Apne logic ka ek chhota dry-run karo: sabse chhote input par kya hoga?";
+  const mismatchNote = analysis.mismatchNote || null;
   const blockedDirectAnswer = isAskingForDirectSolution(question);
 
   let aiHint = null;
   try {
-    aiHint = await generateGeminiHint({ code, question, hintLevel, fallback: found });
+    aiHint = await generateGeminiHint({ code, question, hintLevel, primaryIssue, baseHint, mismatchNote });
   } catch (_err) {
     aiHint = null;
   }
 
-  const baseText = aiHint || found.hint;
+  const baseText = aiHint || baseHint;
   const hint = blockedDirectAnswer
     ? `Seedha solution nahi milega — ${baseText}`
     : baseText;
 
   return res.json({
+    sessionId,
     blockedDirectAnswer,
-    lineNumber: found.lineNumber,
-    issueType: found.issueType,
+    lineNumber: primaryIssue.lineNumber,
+    issueType: primaryIssue.issueType,
     hintLevel,
     hint,
-    nextPrompt: "Pehle khud ek chhota badlav karke try karo, phir batao kya hua."
+    nextPrompt: "Pehle khud ek chhota badlav karke try karo, phir batao kya hua.",
+    sessionSummary,
+    mismatchNote
   });
 });
 
