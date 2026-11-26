@@ -3,221 +3,553 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeriCode Studio — Socratic Lab, Rubric & Bluff Audit</title>
+  <title>VeriCode Studio — Academic Integrity & Socratic Lab</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --surface: #11182c;
-      --surface-2: #17213b;
-      --border: #263455;
-      --text: #e6edf7;
-      --muted: #9fb0cb;
-      --accent: #3b82f6;
-      --accent-2: #7c3aed;
-      --ok: #10b981;
-      --warn: #f59e0b;
-      --bad: #ef4444;
+      --bg-base: #070b14;
+      --bg-elevated: #0e1526;
+      --bg-card: #121b30;
+      --bg-input: #0b1120;
+      --border-subtle: rgba(148, 163, 184, 0.14);
+      --border-strong: rgba(99, 102, 241, 0.42);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --accent-cyan: #06b6d4;
+      --success-bg: rgba(16, 185, 129, 0.14);
+      --success-fg: #34d399;
+      --warn-bg: rgba(245, 158, 11, 0.14);
+      --warn-fg: #fbbf24;
+      --danger-bg: rgba(239, 68, 68, 0.16);
+      --danger-fg: #f87171;
+      --radius-lg: 16px;
+      --radius-md: 11px;
+      --radius-sm: 8px;
+      --shadow-card: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+      --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
     }
-    * { box-sizing: border-box; }
-    body {
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
       margin: 0;
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-      background: radial-gradient(circle at top right, #162342 0%, var(--bg) 55%);
-      color: var(--text);
-      line-height: 1.45;
+      padding: 0;
+      background:
+        radial-gradient(900px 420px at 85% -5%, rgba(79, 70, 229, 0.18), transparent 60%),
+        radial-gradient(700px 380px at 10% 0%, rgba(6, 182, 212, 0.10), transparent 55%),
+        var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
-    .wrap { max-width: 1280px; margin: 0 auto; padding: 18px 20px 44px; }
+
+    .app-shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 18px 22px 52px;
+    }
+
+    /* Top Command Bar */
     .topbar {
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px;
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      background: rgba(14, 21, 38, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 15px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+
+    .brand-sub {
+      margin: 1px 0 0;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .toolbar-right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--success-bg);
+      color: var(--success-fg);
+      border: 1px solid rgba(52, 211, 153, 0.28);
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success-fg);
+    }
+
+    .segmented {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .segmented button {
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .segmented button.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(79, 70, 229, 0.35);
+    }
+
+    /* Inputs & Buttons */
+    select, input, textarea {
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: var(--font-sans);
+      font-size: 0.86rem;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--border-strong);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 152px;
+      resize: vertical;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 9px 14px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease, background-color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, #4f46e5, #0891b2);
+      color: #ffffff;
+    }
+
+    .btn-ghost {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(148, 163, 184, 0.35);
+    }
+
+    .btn-sm {
+      padding: 6px 11px;
+      font-size: 0.79rem;
+    }
+
+    /* Layout Grid & Cards */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-bottom: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow-card);
       margin-bottom: 16px;
     }
-    .brand h1 { margin: 0; font-size: 1.25rem; letter-spacing: 0.2px; }
-    .brand p { margin: 2px 0 0; font-size: 0.85rem; color: var(--muted); }
-    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-    .badge-ok {
-      background: rgba(16, 185, 129, 0.14); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35);
-      padding: 6px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
     }
-    .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
-    .seg button {
-      border: 0; background: transparent; color: var(--muted); padding: 7px 13px; border-radius: 8px;
-      cursor: pointer; font-weight: 600; font-size: 0.85rem;
+
+    .card-title {
+      margin: 0;
+      font-size: 0.96rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
     }
-    .seg button.active { background: var(--accent); color: #fff; }
-    select, input, textarea {
-      background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
-      border-radius: 9px; padding: 8px 11px; font-size: 0.9rem; outline: none;
-    }
-    select:focus, input:focus, textarea:focus { border-color: var(--accent); }
-    textarea {
-      width: 100%; min-height: 145px; resize: vertical;
-      font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace; font-size: 0.88rem;
-    }
-    .btn {
-      border: 0; border-radius: 9px; padding: 9px 14px; font-weight: 600; font-size: 0.86rem;
-      cursor: pointer; color: #fff; background: var(--accent); transition: opacity 0.15s ease;
-    }
-    .btn:hover { opacity: 0.92; }
-    .btn.secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
-    .btn.purple { background: var(--accent-2); }
-    .btn.sm { padding: 6px 10px; font-size: 0.8rem; }
-    .grid-2 { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; margin-bottom: 16px; }
-    @media (max-width: 920px) { .grid-2 { grid-template-columns: 1fr; } }
-    .card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px;
-      margin-bottom: 14px;
-    }
-    .card h2 { margin: 0 0 10px; font-size: 1rem; }
-    .row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .code-view {
-      margin-top: 10px; background: #090e1c; border: 1px solid var(--border); border-radius: 10px;
-      padding: 8px 0; font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace; font-size: 0.84rem;
-      max-height: 210px; overflow: auto;
-    }
-    .code-line { display: flex; gap: 12px; padding: 1px 12px; white-space: pre; }
-    .code-line .ln { color: #64748b; user-select: none; min-width: 24px; text-align: right; }
-    .code-line.target { background: rgba(239, 68, 68, 0.18); border-left: 3px solid var(--bad); }
-    .callout {
-      background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       margin-top: 10px;
     }
+
+    /* Code Inspector */
+    .line-inspector {
+      margin-top: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 0;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      max-height: 215px;
+      overflow: auto;
+    }
+
+    .code-row {
+      display: flex;
+      gap: 14px;
+      padding: 2px 14px;
+      white-space: pre;
+    }
+
+    .code-row .ln {
+      min-width: 22px;
+      text-align: right;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .code-row.is-target {
+      background: var(--danger-bg);
+      border-left: 3px solid var(--danger-fg);
+      padding-left: 11px;
+    }
+
+    .code-row.is-target .ln {
+      color: var(--danger-fg);
+      font-weight: 700;
+    }
+
+    /* Surface Callouts & Pills */
+    .surface-box {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+    }
+
     .pill {
-      display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.73rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.4px;
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.71rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-    .pill.met { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; }
-    .pill.partial { background: rgba(245, 158, 11, 0.18); color: #fcd34d; }
-    .pill.missing, .pill.bluff { background: rgba(239, 68, 68, 0.18); color: #fca5a5; }
-    .pill.verified { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; }
-    .rubric-item {
-      display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
-      padding: 9px 11px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--border);
+
+    .pill-ok { background: var(--success-bg); color: var(--success-fg); }
+    .pill-warn { background: var(--warn-bg); color: var(--warn-fg); }
+    .pill-bad { background: var(--danger-bg); color: var(--danger-fg); }
+
+    .rubric-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
       margin-top: 8px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
     }
-    .muted { color: var(--muted); font-size: 0.84rem; }
-    .mono { font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace; }
+
+    .collab-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 860px) {
+      .collab-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .kpi-card {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .kpi-value {
+      margin-top: 6px;
+      font-size: 1.5rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+    }
+
+    .muted { color: var(--text-secondary); font-size: 0.82rem; }
+    .mono { font-family: var(--font-mono); }
     .hidden { display: none !important; }
-    .heatmap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 10px; }
-    .heat-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
-    .heat-num { font-size: 1.45rem; font-weight: 700; margin-top: 4px; }
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(2, 6, 23, 0.78); display: flex;
-      align-items: center; justify-content: center; z-index: 50; padding: 16px;
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(2, 6, 23, 0.78);
+      backdrop-filter: blur(6px);
     }
-    .modal-card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-      padding: 20px; max-width: 360px; width: 100%; text-align: center;
+
+    .modal-box {
+      width: 100%;
+      max-width: 360px;
+      padding: 22px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <h1>VeriCode Studio</h1>
-        <p>Socratic Mentor • Rubric &amp; Bluff Auditor • Cohort Heatmap • Study Groups &amp; QR Contests</p>
+        <div class="brand-mark">VS</div>
+        <div>
+          <h1 class="brand-title">VeriCode Studio</h1>
+          <p class="brand-sub">Socratic Lab • Rubric &amp; Bluff Audit • Cohort Heatmap • Study Groups &amp; QR Contests</p>
+        </div>
       </div>
-      <div class="controls">
-        <span id="statusBadge" class="badge-ok">BACKEND ONLINE</span>
-        <select id="scenarioSelect" aria-label="Scenario Preset">
+
+      <div class="toolbar-right">
+        <span id="statusBadge" class="live-pill">
+          <span class="live-dot"></span>
+          <span>BACKEND ONLINE</span>
+        </span>
+        <select id="scenarioSelect" aria-label="Preset Scenario">
           <option value="loop">1. Infinite Loop &amp; Bounds</option>
           <option value="error">2. Missing Error &amp; Null Guard</option>
-          <option value="viva">3. Viva Bluff Check Case</option>
+          <option value="viva">3. Viva Bluff Verification</option>
         </select>
-        <input id="studentIdInput" type="text" placeholder="Student ID (e.g. 2410991234)" style="width: 195px;" />
-        <div class="seg">
-          <button id="tabStudent" class="active" type="button">Student Lab</button>
-          <button id="tabFaculty" type="button">Faculty Console</button>
+        <input id="studentIdInput" type="text" placeholder="Student ID (e.g. 2410991234)" style="width: 196px;" />
+        <div class="segmented" role="tablist">
+          <button id="tabStudent" class="active" type="button" role="tab">Student Lab</button>
+          <button id="tabFaculty" type="button" role="tab">Faculty Console</button>
         </div>
       </div>
     </header>
 
     <main id="studentView">
-      <div class="grid-2">
-        <section>
-          <div class="card">
-            <h2>Code Workspace &amp; Target Line</h2>
-            <textarea id="codeEditor" spellcheck="false"></textarea>
-            <div class="row-actions">
-              <button id="runRubricBtn" class="btn purple" type="button">Run Rubric &amp; Code Check</button>
-              <button id="exportSnapshotBtn" class="btn secondary" type="button">Export Summary (.md)</button>
-            </div>
-            <div id="codeLineView" class="code-view"></div>
-            <div id="rubricBox" class="callout">
-              <span class="muted">Rubric evaluation yahan dikhega (Met / Partial / Missing).</span>
-            </div>
+      <div class="main-grid">
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Code Workspace &amp; Target Line</h2>
+            <span class="muted mono">Live AST / Rule Check</span>
+          </div>
+
+          <textarea id="codeEditor" spellcheck="false"></textarea>
+
+          <div class="actions">
+            <button id="runRubricBtn" class="btn btn-accent" type="button">Run Rubric &amp; Code Check</button>
+            <button id="exportSnapshotBtn" class="btn btn-ghost" type="button">Export Report (.md)</button>
+          </div>
+
+          <div id="codeLineView" class="line-inspector"></div>
+
+          <div id="rubricBox" class="surface-box">
+            <span class="muted">Rubric evaluation yahan dikhega (Met / Partial / Missing).</span>
           </div>
         </section>
 
-        <section>
-          <div class="card">
-            <h2>Socratic Hint &amp; Step Visualizer</h2>
-            <input id="doubtInput" type="text" placeholder="Apna doubt ya approach likho..." style="width: 100%;" />
-            <div class="row-actions">
-              <button id="getHintBtn" class="btn" type="button">Get Socratic Hint</button>
-              <button id="resetHintBtn" class="btn secondary" type="button">Reset Hint Level</button>
+        <div>
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Socratic Mentor &amp; Guardrail</h2>
+              <span class="muted">No Direct Spoilers</span>
             </div>
-            <div id="hintBox" class="callout">
-              <span class="pill verified">READY</span>
-              <div style="margin-top: 8px;">Pehle apna code aur doubt check karo — direct solution blocked hai.</div>
-            </div>
-            <div id="microDrillBox" class="callout hidden" style="border-color: rgba(245, 158, 11, 0.45);"></div>
-          </div>
 
-          <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <h2 style="margin:0;">Dry-Run Step Visualizer</h2>
-              <span id="stepCounter" class="pill partial">STEP 1 / 3</span>
+            <input id="doubtInput" type="text" placeholder="Apna doubt ya approach likho..." style="width: 100%;" />
+
+            <div class="actions">
+              <button id="getHintBtn" class="btn btn-primary" type="button">Get Socratic Hint</button>
+              <button id="resetHintBtn" class="btn btn-ghost" type="button">Reset Level</button>
             </div>
-            <div id="stepDesc" class="callout">Step 1: Initial state check karo.</div>
-            <div class="row-actions">
-              <button id="prevStepBtn" class="btn secondary sm" type="button">Prev Step</button>
-              <button id="nextStepBtn" class="btn secondary sm" type="button">Next Step</button>
+
+            <div id="hintBox" class="surface-box">
+              <span class="pill pill-ok">READY</span>
+              <div style="margin-top: 8px;">Pehle apna code aur doubt check karo — direct solution aur prompt overrides block hain.</div>
             </div>
+
+            <div id="microDrillBox" class="surface-box hidden" style="border-color: rgba(251, 191, 36, 0.35);"></div>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Dry-Run Step Visualizer</h2>
+              <span id="stepCounter" class="pill pill-warn">STEP 1 / 3</span>
+            </div>
+
+            <div id="stepDesc" class="surface-box">Step 1: Initial state check karo.</div>
+
+            <div class="actions">
+              <button id="prevStepBtn" class="btn btn-ghost btn-sm" type="button">Prev Step</button>
+              <button id="nextStepBtn" class="btn btn-ghost btn-sm" type="button">Next Step</button>
+            </div>
+
             <div id="effortMeter" class="muted" style="margin-top: 12px;">
               Attempts: 0 • Hint Level: 1 • Blocked Shortcuts: 0
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
 
       <section class="card">
-        <h2>Study Groups, Peer Suggestions &amp; QR Contests</h2>
-        <div class="grid-2" style="margin-bottom: 0;">
+        <div class="card-header">
+          <h2 class="card-title">Study Groups, Peer Suggestions &amp; QR Contests</h2>
+          <span class="muted">Instant LAN Join &amp; Guardrailed Peer Hints</span>
+        </div>
+
+        <div class="collab-grid">
           <div>
-            <h3 style="margin:0 0 8px; font-size:0.95rem;">1. Study Group &amp; Peer Suggestions</h3>
-            <div class="row-actions" style="margin-top:0;">
-              <input id="groupNameInput" type="text" placeholder="Group Name (e.g. DSA Squad)" style="flex:1;" />
-              <button id="createGroupBtn" class="btn sm" type="button">Create Group</button>
+            <h3 style="margin: 0 0 8px; font-size: 0.9rem;">1. Study Group &amp; Peer Suggestions</h3>
+            <div class="actions" style="margin-top: 0;">
+              <input id="groupNameInput" type="text" placeholder="Group Name (e.g. DSA Squad)" style="flex: 1;" />
+              <button id="createGroupBtn" class="btn btn-primary btn-sm" type="button">Create Group</button>
             </div>
-            <div class="row-actions">
-              <input id="groupCodeInput" type="text" placeholder="Group Code (GRP-XXXXXX)" style="flex:1;" />
-              <button id="joinGroupBtn" class="btn secondary sm" type="button">Join Group</button>
-              <button id="groupQrBtn" class="btn secondary sm hidden" type="button">Show QR</button>
+            <div class="actions">
+              <input id="groupCodeInput" type="text" placeholder="Group Code (GRP-XXXXXX)" style="flex: 1;" />
+              <button id="joinGroupBtn" class="btn btn-ghost btn-sm" type="button">Join Group</button>
+              <button id="groupQrBtn" class="btn btn-ghost btn-sm hidden" type="button">Show QR</button>
             </div>
-            <div id="groupStatus" class="callout"><span class="muted">No active group selected.</span></div>
-            <div class="row-actions">
-              <input id="peerSuggestInput" type="text" placeholder="Peer hint/suggestion (no direct solution)" style="flex:1;" />
-              <button id="sendSuggestBtn" class="btn sm" type="button">Post Hint</button>
+            <div id="groupStatus" class="surface-box"><span class="muted">No active group selected.</span></div>
+            <div class="actions">
+              <input id="peerSuggestInput" type="text" placeholder="Peer hint/suggestion (no direct solution)" style="flex: 1;" />
+              <button id="sendSuggestBtn" class="btn btn-primary btn-sm" type="button">Post Hint</button>
             </div>
           </div>
 
           <div>
-            <h3 style="margin:0 0 8px; font-size:0.95rem;">2. Code &amp; QR Contest Mode</h3>
-            <div class="row-actions" style="margin-top:0;">
-              <input id="contestTitleInput" type="text" placeholder="Contest Title (e.g. Loop Sprint)" style="flex:1;" />
-              <button id="createContestBtn" class="btn purple sm" type="button">Create Contest + QR</button>
+            <h3 style="margin: 0 0 8px; font-size: 0.9rem;">2. Code &amp; QR Contest Mode</h3>
+            <div class="actions" style="margin-top: 0;">
+              <input id="contestTitleInput" type="text" placeholder="Contest Title (e.g. Loop Sprint)" style="flex: 1;" />
+              <button id="createContestBtn" class="btn btn-accent btn-sm" type="button">Create Contest + QR</button>
             </div>
-            <div class="row-actions">
-              <input id="contestCodeInput" type="text" placeholder="Contest Code (QRC-XXXXXX)" style="flex:1;" />
-              <button id="joinContestBtn" class="btn secondary sm" type="button">Join Contest</button>
-              <button id="contestQrBtn" class="btn secondary sm hidden" type="button">Show QR</button>
+            <div class="actions">
+              <input id="contestCodeInput" type="text" placeholder="Contest Code (QRC-XXXXXX)" style="flex: 1;" />
+              <button id="joinContestBtn" class="btn btn-ghost btn-sm" type="button">Join Contest</button>
+              <button id="contestQrBtn" class="btn btn-ghost btn-sm hidden" type="button">Show QR</button>
             </div>
-            <div id="contestStatus" class="callout"><span class="muted">No active contest.</span></div>
-            <div class="row-actions">
-              <input id="contestNoteInput" type="text" placeholder="Approach / fix note" style="flex:1;" />
-              <button id="submitAttemptBtn" class="btn sm" type="button">Log Attempt</button>
+            <div id="contestStatus" class="surface-box"><span class="muted">No active contest.</span></div>
+            <div class="actions">
+              <input id="contestNoteInput" type="text" placeholder="Approach / fix note" style="flex: 1;" />
+              <button id="submitAttemptBtn" class="btn btn-primary btn-sm" type="button">Log Attempt</button>
             </div>
           </div>
         </div>
@@ -226,26 +558,30 @@
 
     <section id="facultyView" class="hidden">
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h2 style="margin:0;">Cohort Weakness Heatmap</h2>
-          <button id="refreshCohortBtn" class="btn secondary sm" type="button">Refresh Telemetry</button>
+        <div class="card-header">
+          <h2 class="card-title">Cohort Weakness Heatmap</h2>
+          <button id="refreshCohortBtn" class="btn btn-ghost btn-sm" type="button">Refresh Telemetry</button>
         </div>
-        <div id="heatmapGrid" class="heatmap-grid" style="margin-top:12px;"></div>
+        <div id="heatmapGrid" class="kpi-grid"></div>
       </div>
 
-      <div class="grid-2">
+      <div class="main-grid">
         <div class="card">
-          <h2>Voice Viva Bluff &amp; Evidence Verifier</h2>
-          <textarea id="vivaClaimInput" style="min-height:95px;" placeholder="Student ka viva claim likho (e.g. Maine try-catch aur edge validation dono lagaya hai)"></textarea>
-          <div class="row-actions">
-            <button id="verifyVivaBtn" class="btn" type="button">Verify Claim Against Code</button>
+          <div class="card-header">
+            <h2 class="card-title">Voice Viva Bluff &amp; Code Evidence Verifier</h2>
           </div>
-          <div id="vivaResultBox" class="callout"><span class="muted">Viva claim verify karne ke liye text daalo.</span></div>
+          <textarea id="vivaClaimInput" style="min-height: 98px;" placeholder="Viva claim daalo (e.g. Maine try-catch aur edge validation dono handle kiya hai)"></textarea>
+          <div class="actions">
+            <button id="verifyVivaBtn" class="btn btn-primary" type="button">Verify Claim Against Code</button>
+          </div>
+          <div id="vivaResultBox" class="surface-box"><span class="muted">Viva claim verify karne ke liye text daalo.</span></div>
         </div>
 
         <div class="card">
-          <h2>Bluff &amp; Integrity Audit Feed</h2>
-          <div id="auditFeedBox" class="callout" style="max-height:240px; overflow:auto;">
+          <div class="card-header">
+            <h2 class="card-title">Bluff &amp; Integrity Audit Feed</h2>
+          </div>
+          <div id="auditFeedBox" class="surface-box" style="max-height: 245px; overflow: auto;">
             <span class="muted">Loading audit logs...</span>
           </div>
         </div>
@@ -253,12 +589,12 @@
     </section>
   </div>
 
-  <div id="qrModal" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <h3 id="qrTitle" style="margin:0 0 6px;">Scan to Join</h3>
-      <p id="qrUrlText" class="mono muted" style="word-break:break-all; margin:0 0 12px;"></p>
-      <div id="qrSvgContainer" style="display:flex; justify-content:center; margin-bottom:12px;"></div>
-      <button id="closeQrBtn" class="btn secondary sm" type="button">Close</button>
+  <div id="qrModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3 id="qrTitle" style="margin: 0 0 6px; font-size: 1rem;">Scan to Join</h3>
+      <p id="qrUrlText" class="mono muted" style="word-break: break-all; margin: 0 0 14px;"></p>
+      <div id="qrSvgContainer" style="display: flex; justify-content: center; margin-bottom: 14px;"></div>
+      <button id="closeQrBtn" class="btn btn-ghost btn-sm" type="button">Close</button>
     </div>
   </div>
 
@@ -272,17 +608,17 @@
           "Step 2: 'while (true)' condition har iteration mein true rehti hai.",
           "Step 3: Exit condition ya max limit add karke termination verify karo."
         ],
-        drill: "Micro-Drill: Agar target limit 5 ho, toh while condition kya likhni chahiye taaki loop 5 ke baad ruk jaye?"
+        drill: "Micro-Drill: Agar max count 5 rakhna ho, toh loop condition kya honi chahiye?"
       },
       error: {
         code: "function parseScore(raw) {\n  return JSON.parse(raw).score;\n}",
         doubt: "Invalid JSON ya missing score aaye toh kya hoga?",
         steps: [
           "Step 1: 'raw' string ko JSON.parse() se object mein badla jata hai.",
-          "Step 2: Malformed string par JSON.parse() exception throw kar sakta hai.",
+          "Step 2: Malformed input par JSON.parse() exception throw kar sakta hai.",
           "Step 3: Null/undefined object aur missing 'score' field ko safely guard karo."
         ],
-        drill: "Micro-Drill: Agar 'raw' empty string ho, toh safe fallback return karne ke liye kaunsa block zaroori hai?"
+        drill: "Micro-Drill: Agar 'raw' invalid JSON ho, toh crash rokne ke liye kaunsa block zaroori hai?"
       },
       viva: {
         code: "let items = [];\nfor (let i = 0; i < items.length; i++) {\n  console.log(items[i]);\n}",
@@ -292,7 +628,7 @@
           "Step 2: Is snippet mein koi try/catch ya external cache logic nahi hai.",
           "Step 3: Jo claim bolo, uske liye code mein exact line/guard dikha pao."
         ],
-        drill: "Micro-Drill: Viva mein 'error handling' claim karne se pehle kaunsa block code mein hona chahiye?"
+        drill: "Micro-Drill: Viva mein 'error handling' claim karne se pehle code mein kya hona chahiye?"
       }
     };
 
@@ -318,17 +654,19 @@
       return val || "STU-DEMO";
     }
 
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
     function renderCodeLines(targetLine = state.targetLine) {
       const lines = $("codeEditor").value.split("\n");
       $("codeLineView").innerHTML = lines.map((line, i) => {
         const ln = i + 1;
-        const cls = ln === targetLine ? "code-line target" : "code-line";
+        const cls = ln === targetLine ? "code-row is-target" : "code-row";
         return `<div class="${cls}"><span class="ln">${ln}</span><span>${escapeHtml(line)}</span></div>`;
       }).join("");
-    }
-
-    function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
     }
 
     function renderStep() {
@@ -340,7 +678,8 @@
     }
 
     function updateEffortMeter() {
-      $("effortMeter").textContent = `Attempts: ${state.attempts} • Hint Level: ${state.hintLevel} • Blocked Shortcuts: ${state.blocked}`;
+      $("effortMeter").textContent =
+        `Attempts: ${state.attempts} • Hint Level: ${state.hintLevel} • Blocked Shortcuts: ${state.blocked}`;
     }
 
     function loadScenario(key) {
@@ -353,7 +692,6 @@
       renderStep();
     }
 
-    // Zero-dependency deterministic matrix SVG QR representation
     function buildQrSvg(text) {
       const size = 21;
       const grid = Array.from({ length: size }, () => Array(size).fill(false));
@@ -388,7 +726,7 @@
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           if (grid[r][c]) {
-            rects += `<rect x="${c * cell}" y="${r * cell}" width="${cell}" height="${cell}" fill="#0b1020"/>`;
+            rects += `<rect x="${c * cell}" y="${r * cell}" width="${cell}" height="${cell}" fill="#070b14"/>`;
           }
         }
       }
@@ -423,21 +761,19 @@
     });
 
     $("getHintBtn").addEventListener("click", async () => {
-      const code = $("codeEditor").value;
-      const question = $("doubtInput").value;
       const resp = await fetch("/api/hint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code,
-          question,
+          code: $("codeEditor").value,
+          question: $("doubtInput").value,
           hintLevel: state.hintLevel,
           sessionId: `${getStudentId()}-${state.sessionId}`
         })
       });
       const data = await resp.json();
       if (!resp.ok) {
-        $("hintBox").innerHTML = `<span class="pill missing">ERROR</span><div style="margin-top:6px;">${escapeHtml(data.error || "Request failed")}</div>`;
+        $("hintBox").innerHTML = `<span class="pill pill-bad">ERROR</span><div style="margin-top:6px;">${escapeHtml(data.error || "Request failed")}</div>`;
         return;
       }
       state.attempts += 1;
@@ -447,18 +783,24 @@
       renderCodeLines(state.targetLine);
       updateEffortMeter();
 
-      const badgeClass = (data.blockedDirectAnswer || data.injectionDetected) ? "pill missing" : "pill partial";
-      const badgeLabel = data.injectionDetected ? "INJECTION BLOCKED" : data.blockedDirectAnswer ? "DIRECT ANSWER BLOCKED" : `LEVEL ${data.hintLevel}`;
+      const blocked = data.blockedDirectAnswer || data.injectionDetected;
+      const badgeCls = blocked ? "pill pill-bad" : "pill pill-warn";
+      const badgeText = data.injectionDetected
+        ? "INJECTION BLOCKED"
+        : data.blockedDirectAnswer
+          ? "DIRECT ANSWER BLOCKED"
+          : `LEVEL ${data.hintLevel}`;
+
       $("hintBox").innerHTML = `
-        <span class="${badgeClass}">${badgeLabel}</span>
+        <span class="${badgeCls}">${badgeText}</span>
         <span class="muted" style="margin-left:8px;">Line ${data.lineNumber} • ${escapeHtml(data.issueType)}</span>
         <div style="margin-top:8px;">${escapeHtml(data.hint)}</div>
         <div class="muted" style="margin-top:6px;">${escapeHtml(data.nextPrompt || "")}</div>
       `;
 
-      const drillText = SCENARIOS[$("scenarioSelect").value]?.drill || "Micro-Drill: Edge case (0, empty, null) par apna logic dry-run karke batao.";
+      const drillText = SCENARIOS[$("scenarioSelect").value]?.drill || "Micro-Drill: Edge case par apna logic dry-run karo.";
       $("microDrillBox").classList.remove("hidden");
-      $("microDrillBox").innerHTML = `<span class="pill partial">MICRO-DRILL</span><div style="margin-top:6px;">${escapeHtml(drillText)}</div>`;
+      $("microDrillBox").innerHTML = `<span class="pill pill-warn">MICRO-DRILL</span><div style="margin-top:6px;">${escapeHtml(drillText)}</div>`;
 
       if (state.hintLevel < 3) state.hintLevel += 1;
       updateEffortMeter();
@@ -467,7 +809,7 @@
     $("resetHintBtn").addEventListener("click", () => {
       state.hintLevel = 1;
       updateEffortMeter();
-      $("hintBox").innerHTML = `<span class="pill verified">RESET</span><div style="margin-top:8px;">Hint level 1 par reset ho gaya.</div>`;
+      $("hintBox").innerHTML = `<span class="pill pill-ok">RESET</span><div style="margin-top:8px;">Hint level 1 par reset ho gaya.</div>`;
     });
 
     $("runRubricBtn").addEventListener("click", async () => {
@@ -482,10 +824,10 @@
       state.targetLine = data.primaryIssue?.lineNumber || state.targetLine;
       renderCodeLines(state.targetLine);
 
-      const itemsHtml = (data.rubric?.checks || []).map((c) => {
-        const cls = c.status === "Met" ? "met" : c.status === "Partial" ? "partial" : "missing";
+      const rows = (data.rubric?.checks || []).map((c) => {
+        const cls = c.status === "Met" ? "pill-ok" : c.status === "Partial" ? "pill-warn" : "pill-bad";
         return `
-          <div class="rubric-item">
+          <div class="rubric-row">
             <div>
               <div><strong>${escapeHtml(c.criterion)}</strong></div>
               <div class="muted">${escapeHtml(c.note)}</div>
@@ -494,21 +836,23 @@
           </div>
         `;
       }).join("");
-      $("rubricBox").innerHTML = `<div><strong>Rubric Audit</strong></div>${itemsHtml}`;
+      $("rubricBox").innerHTML = `<div><strong>Rubric Audit</strong></div>${rows}`;
     });
 
     $("exportSnapshotBtn").addEventListener("click", () => {
-      const checks = (state.lastRubric?.checks || []).map((c) => `- ${c.criterion}: **${c.status}** (${c.note})`).join("\n") || "- Not run yet";
+      const checks = (state.lastRubric?.checks || [])
+        .map((c) => `- ${c.criterion}: **${c.status}** (${c.note})`)
+        .join("\n") || "- Not run yet";
       const md = [
-        `# VeriCode Studio Evaluation Snapshot`,
+        "# VeriCode Studio Evaluation Report",
         `- **Student ID:** ${getStudentId()}`,
         `- **Attempts:** ${state.attempts} | **Blocked Shortcuts:** ${state.blocked} | **Target Line:** ${state.targetLine}`,
         `- **Latest Hint:** ${state.lastHint || "N/A"}`,
-        ``,
-        `## Rubric Checks`,
+        "",
+        "## Rubric Checks",
         checks,
-        ``,
-        `## Code Snapshot`,
+        "",
+        "## Code Snapshot",
         "```text",
         $("codeEditor").value,
         "```"
@@ -517,25 +861,24 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${getStudentId()}-vericode-snapshot.md`;
+      a.download = `${getStudentId()}-vericode-report.md`;
       a.click();
       URL.revokeObjectURL(url);
     });
 
-    // Groups
     function renderGroup(group, joinUrl) {
       state.activeGroupCode = group.code;
       state.activeGroupJoinUrl = joinUrl || "";
       $("groupCodeInput").value = group.code;
       $("groupQrBtn").classList.remove("hidden");
       const msgs = (group.messages || []).slice(-5).map((m) => {
-        const tag = m.blocked ? `<span class="pill missing">BLOCKED</span> ` : "";
+        const tag = m.blocked ? `<span class="pill pill-bad">BLOCKED</span> ` : "";
         return `<div style="margin-top:4px;">${tag}<strong>${escapeHtml(m.studentId)}:</strong> ${escapeHtml(m.text)}</div>`;
       }).join("");
       $("groupStatus").innerHTML = `
         <div><strong>${escapeHtml(group.name)}</strong> (<span class="mono">${escapeHtml(group.code)}</span>)</div>
         <div class="muted">Members: ${group.members.map(escapeHtml).join(", ")}</div>
-        <div class="mono muted" style="font-size:0.76rem; margin-top:2px;">${escapeHtml(joinUrl || "")}</div>
+        <div class="mono muted" style="font-size:0.75rem; margin-top:2px;">${escapeHtml(joinUrl || "")}</div>
         <div style="margin-top:6px;">${msgs}</div>
       `;
     }
@@ -579,7 +922,6 @@
       if (state.activeGroupJoinUrl) openQrModal(`Group ${state.activeGroupCode}`, state.activeGroupJoinUrl);
     });
 
-    // Contests
     function renderContest(contest, joinUrl) {
       state.activeContestCode = contest.code;
       state.activeContestJoinUrl = joinUrl || "";
@@ -591,7 +933,7 @@
       $("contestStatus").innerHTML = `
         <div><strong>${escapeHtml(contest.title)}</strong> (<span class="mono">${escapeHtml(contest.code)}</span>)</div>
         <div class="muted">${escapeHtml(contest.prompt)}</div>
-        <div class="mono muted" style="font-size:0.76rem; margin-top:2px;">${escapeHtml(joinUrl || "")}</div>
+        <div class="mono muted" style="font-size:0.75rem; margin-top:2px;">${escapeHtml(joinUrl || "")}</div>
         <div style="margin-top:6px;">${board}</div>
       `;
     }
@@ -637,12 +979,11 @@
 
     $("closeQrBtn").addEventListener("click", () => $("qrModal").classList.add("hidden"));
 
-    // Faculty
     async function loadCohortTelemetry() {
       const resp = await fetch("/api/cohort");
       const data = await resp.json();
       const w = data.stats?.weaknessCounts || {};
-      const cards = [
+      const items = [
         { label: "Submissions", val: data.stats?.submissions ?? 0 },
         { label: "Bluffs Flagged", val: data.stats?.bluffsDetected ?? 0 },
         { label: "Injections Blocked", val: data.stats?.injectionsBlocked ?? 0 },
@@ -650,16 +991,16 @@
         { label: "Missing Error Guard", val: w["error-handling-missing"] ?? 0 },
         { label: "Missing Input Guard", val: w["input-validation-missing"] ?? 0 }
       ];
-      $("heatmapGrid").innerHTML = cards.map((c) => `
-        <div class="heat-box">
+      $("heatmapGrid").innerHTML = items.map((c) => `
+        <div class="kpi-card">
           <div class="muted">${escapeHtml(c.label)}</div>
-          <div class="heat-num">${c.val}</div>
+          <div class="kpi-value">${c.val}</div>
         </div>
       `).join("");
 
       const logs = data.recentLogs || [];
       $("auditFeedBox").innerHTML = logs.length
-        ? logs.map((l) => `<div style="padding:5px 0; border-bottom:1px solid var(--border);"><span class="mono muted">${escapeHtml(l.eventType)}</span> <strong>${escapeHtml(l.actorId)}</strong>: ${escapeHtml(l.detail)}</div>`).join("")
+        ? logs.map((l) => `<div style="padding: 6px 0; border-bottom: 1px solid var(--border-subtle);"><span class="mono muted">${escapeHtml(l.eventType)}</span> <strong>${escapeHtml(l.actorId)}</strong>: ${escapeHtml(l.detail)}</div>`).join("")
         : `<span class="muted">Abhi koi audit event nahi aaya.</span>`;
     }
 
@@ -673,14 +1014,14 @@
       });
       const data = await resp.json();
       if (!resp.ok) return;
-      const pillCls = data.bluffDetected ? "pill bluff" : "pill verified";
+      const cls = data.bluffDetected ? "pill pill-bad" : "pill pill-ok";
       const checksHtml = (data.checks || []).map((ch) =>
-        `<div style="margin-top:4px;">${escapeHtml(ch.topic)}: <strong>${ch.verifiedInCode ? "Matched in Code" : "Not Found in Code"}</strong></div>`
+        `<div style="margin-top: 4px;">${escapeHtml(ch.topic)}: <strong>${ch.verifiedInCode ? "Matched in Code" : "Not Found in Code"}</strong></div>`
       ).join("");
       $("vivaResultBox").innerHTML = `
-        <span class="${pillCls}">${escapeHtml(data.verdict)}</span>
+        <span class="${cls}">${escapeHtml(data.verdict)}</span>
         ${checksHtml}
-        <div class="muted" style="margin-top:8px;">Follow-up Probe: ${escapeHtml(data.followUpQuestion || "")}</div>
+        <div class="muted" style="margin-top: 8px;">Follow-up Probe: ${escapeHtml(data.followUpQuestion || "")}</div>
       `;
       await loadCohortTelemetry();
     });
@@ -689,17 +1030,13 @@
       loadScenario("loop");
       try {
         const h = await fetch("/health");
-        if (h.ok) $("statusBadge").textContent = "BACKEND ONLINE (:5050)";
+        if (h.ok) $("statusBadge").lastElementChild.textContent = "BACKEND ONLINE (:5050)";
       } catch (_e) {
-        $("statusBadge").textContent = "BACKEND OFFLINE";
+        $("statusBadge").lastElementChild.textContent = "BACKEND OFFLINE";
       }
       const params = new URLSearchParams(window.location.search);
-      if (params.get("group")) {
-        $("groupCodeInput").value = params.get("group");
-      }
-      if (params.get("contest")) {
-        $("contestCodeInput").value = params.get("contest");
-      }
+      if (params.get("group")) $("groupCodeInput").value = params.get("group");
+      if (params.get("contest")) $("contestCodeInput").value = params.get("contest");
     })();
   </script>
 </body>
