@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SocratesLive — Base Prototype</title>
+  <title>SocratesLive — Socratic Lab & Step Visualizer</title>
   <style>
     * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
     body {
@@ -13,13 +13,35 @@
       padding: 24px;
     }
     .container {
-      max-width: 1000px;
+      max-width: 1080px;
       margin: 0 auto;
       display: grid;
       gap: 16px;
     }
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
     h1 { margin: 0; font-size: 24px; color: #38bdf8; }
     p.sub { margin: 4px 0 0; color: #94a3b8; font-size: 14px; }
+    select, textarea, input {
+      width: 100%;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 14px;
+    }
+    select { width: auto; min-width: 270px; }
+    textarea.code-input {
+      min-height: 185px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      line-height: 1.5;
+    }
     .grid {
       display: grid;
       grid-template-columns: 1.2fr 0.8fr;
@@ -34,22 +56,9 @@
       border-radius: 12px;
       padding: 16px;
     }
-    label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; }
-    textarea, input {
-      width: 100%;
-      background: #0f172a;
-      color: #f8fafc;
-      border: 1px solid #475569;
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 14px;
-    }
-    textarea.code-input {
-      min-height: 220px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      line-height: 1.5;
-    }
-    .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; margin-top: 10px; }
+    label:first-child { margin-top: 0; }
+    .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
     button {
       background: #0284c7;
       color: white;
@@ -70,7 +79,7 @@
       padding: 10px;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 13px;
-      max-height: 220px;
+      max-height: 190px;
       overflow: auto;
     }
     .line-item {
@@ -84,13 +93,28 @@
       border-left: 3px solid #ef4444;
     }
     .line-num { color: #64748b; user-select: none; min-width: 24px; }
-    .hint-box {
+    .hint-box, .visualizer-box, .tracker-box {
       background: #0f172a;
       border-left: 4px solid #38bdf8;
       border-radius: 8px;
       padding: 14px;
-      margin-top: 10px;
+      margin-top: 12px;
     }
+    .visualizer-box { border-left-color: #a855f7; font-size: 13px; }
+    .tracker-box { border-left-color: #22c55e; font-size: 13px; }
+    .edge-list { display: grid; gap: 8px; margin-top: 8px; }
+    .edge-item {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .pass { color: #4ade80; font-weight: 700; }
+    .fail { color: #f87171; font-weight: 700; }
     .badge {
       display: inline-block;
       font-size: 12px;
@@ -108,9 +132,16 @@
 </head>
 <body>
   <div class="container">
-    <div>
-      <h1>SocratesLive — Base Starter</h1>
-      <p class="sub">No-spoiler Socratic hint + target line highlight base (ready for team modules)</p>
+    <div class="top-row">
+      <div>
+        <h1>SocratesLive — Socratic Lab</h1>
+        <p class="sub">No-spoiler Socratic hints • Target line highlight • Step visualizer • Edge cases</p>
+      </div>
+      <select id="scenarioSelect">
+        <option value="infinite-loop">1. Infinite Loop Check</option>
+        <option value="off-by-one">2. Array Boundary (Off-by-One)</option>
+        <option value="zero-guard">3. Zero Denominator Guard</option>
+      </select>
     </div>
 
     <div class="grid">
@@ -122,6 +153,9 @@ while (true) {
 }</textarea>
 
         <div class="preview-lines" id="codePreview"></div>
+
+        <label>Edge-Case Check</label>
+        <div class="edge-list" id="edgeList"></div>
       </div>
 
       <div class="card">
@@ -150,24 +184,90 @@ while (true) {
           <span class="badge">Ready</span>
           <div>Yahan tumhara Socratic hint aur line focus aayega.</div>
         </div>
+
+        <div class="visualizer-box">
+          <strong>Interactive Step Visualizer</strong>
+          <div id="stepDisplay" style="margin-top:6px;"></div>
+          <div class="row" style="margin-top:8px;">
+            <button type="button" id="prevStepBtn" class="secondary">Prev Step</button>
+            <button type="button" id="nextStepBtn" class="secondary">Next Step</button>
+          </div>
+        </div>
+
+        <div class="tracker-box" id="trackerBox">
+          <strong>Effort Snapshot:</strong> Attempts: <span id="attCount">0</span> | Blocked Shortcuts: <span id="blkCount">0</span>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    const SCENARIOS = {
+      "infinite-loop": {
+        code: "int count = 0;\nwhile (true) {\n  count++;\n}",
+        line: 2,
+        steps: [
+          "Step 1: count = 0 se start hota hai.",
+          "Step 2: while (true) condition hamesha true rehti hai — koi stop rule nahi hai.",
+          "Step 3: Khud socho loop kab rukna chahiye aur exit condition kahan aayegi."
+        ],
+        edges: [
+          { label: "Loop Termination (target = 5)", check: (c) => !/while\s*\(\s*true\s*\)/i.test(c) && /\b(break|count\s*<|count\s*<=)\b/.test(c) },
+          { label: "Zero Target Guard (target = 0)", check: (c) => !/while\s*\(\s*true\s*\)/i.test(c) }
+        ]
+      },
+      "off-by-one": {
+        code: "int[] arr = {10, 20, 30};\nfor (int i = 0; i <= arr.length; i++) {\n  System.out.println(arr[i]);\n}",
+        line: 2,
+        steps: [
+          "Step 1: Array mein 3 elements hain — valid indices 0, 1, 2 hain.",
+          "Step 2: i <= arr.length ki wajah se i = 3 par bhi loop chalne ki koshish karega.",
+          "Step 3: Upper bound ko safely check karo bina out-of-bounds jaaye."
+        ],
+        edges: [
+          { label: "Last Valid Index (length = 3)", check: (c) => !/<=\s*[\w.]+\.length/.test(c) && /<\s*[\w.]+\.length/.test(c) },
+          { label: "Empty Array Safe Check", check: (c) => !/<=\s*[\w.]+\.length/.test(c) }
+        ]
+      },
+      "zero-guard": {
+        code: "int sum = 100;\nint count = 0;\nint avg = sum / count;",
+        line: 3,
+        steps: [
+          "Step 1: sum = 100 aur count = 0 set hai.",
+          "Step 2: count = 0 hone par seedha divide karne se risk aata hai.",
+          "Step 3: Divide karne se pehle count ki safety condition socho."
+        ],
+        edges: [
+          { label: "Zero Denominator (count = 0)", check: (c) => /\bif\b/.test(c) && /count\s*[!>]=?\s*0|count\s*>\s*0/.test(c) },
+          { label: "Normal Division (count = 4)", check: (c) => /\/\s*count\b/.test(c) }
+        ]
+      }
+    };
+
+    const scenarioSelect = document.getElementById("scenarioSelect");
     const codeInput = document.getElementById("codeInput");
     const questionInput = document.getElementById("questionInput");
     const codePreview = document.getElementById("codePreview");
+    const edgeList = document.getElementById("edgeList");
     const hintOutput = document.getElementById("hintOutput");
+    const stepDisplay = document.getElementById("stepDisplay");
+    const prevStepBtn = document.getElementById("prevStepBtn");
+    const nextStepBtn = document.getElementById("nextStepBtn");
     const getHintBtn = document.getElementById("getHintBtn");
     const resetLevelBtn = document.getElementById("resetLevelBtn");
     const sessionIdInput = document.getElementById("sessionIdInput");
     const effortReport = document.getElementById("effortReport");
     const effortVerdict = document.getElementById("effortVerdict");
     const refreshSummaryBtn = document.getElementById("refreshSummaryBtn");
+    const attCountEl = document.getElementById("attCount");
+    const blkCountEl = document.getElementById("blkCount");
 
+    let currentKey = "infinite-loop";
     let currentHighlightLine = 2;
     let hintLevel = 1;
+    let stepIdx = 0;
+    let attempts = 0;
+    let blocked = 0;
 
     function renderCodePreview(activeLine) {
       const lines = codeInput.value.split("\n");
@@ -175,14 +275,61 @@ while (true) {
         .map((line, idx) => {
           const num = idx + 1;
           const cls = num === activeLine ? "line-item highlight" : "line-item";
-          const safeLine = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          const safeLine = line
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
           return `<div class="${cls}"><span class="line-num">${num}</span><span>${safeLine || " "}</span></div>`;
         })
         .join("");
     }
 
-    codeInput.addEventListener("input", () => renderCodePreview(currentHighlightLine));
-    renderCodePreview(currentHighlightLine);
+    function renderEdges() {
+      const edges = SCENARIOS[currentKey].edges;
+      edgeList.innerHTML = edges
+        .map((e) => {
+          const ok = e.check(codeInput.value);
+          return `<div class="edge-item">
+            <span>${e.label}</span>
+            <span class="${ok ? "pass" : "fail"}">${ok ? "PASS" : "NEEDS FIX"}</span>
+          </div>`;
+        })
+        .join("");
+    }
+
+    function renderStep() {
+      const steps = SCENARIOS[currentKey].steps;
+      stepDisplay.textContent = steps[stepIdx] || steps[0];
+    }
+
+    function applyScenario(key) {
+      currentKey = key;
+      const sc = SCENARIOS[key];
+      codeInput.value = sc.code;
+      currentHighlightLine = sc.line;
+      stepIdx = 0;
+      renderCodePreview(currentHighlightLine);
+      renderEdges();
+      renderStep();
+    }
+
+    scenarioSelect.addEventListener("change", (e) => applyScenario(e.target.value));
+    codeInput.addEventListener("input", () => {
+      renderCodePreview(currentHighlightLine);
+      renderEdges();
+    });
+
+    prevStepBtn.addEventListener("click", () => {
+      const steps = SCENARIOS[currentKey].steps;
+      stepIdx = (stepIdx - 1 + steps.length) % steps.length;
+      renderStep();
+    });
+
+    nextStepBtn.addEventListener("click", () => {
+      const steps = SCENARIOS[currentKey].steps;
+      stepIdx = (stepIdx + 1) % steps.length;
+      renderStep();
+    });
 
     function renderEffort(summary) {
       effortReport.innerHTML = `
@@ -219,6 +366,15 @@ while (true) {
     });
 
     getHintBtn.addEventListener("click", async () => {
+      attempts += 1;
+      const qLower = questionInput.value.toLowerCase();
+      if (qLower.includes("full code") || qLower.includes("direct answer") || qLower.includes("poora code")) {
+        blocked += 1;
+      }
+      attCountEl.textContent = attempts;
+      blkCountEl.textContent = blocked;
+      renderEdges();
+
       hintOutput.innerHTML = `<span class="badge">Thinking...</span><div>Hint nikaala ja raha hai...</div>`;
       try {
         const res = await fetch("http://localhost:5050/api/hint", {
@@ -254,6 +410,8 @@ while (true) {
         hintOutput.innerHTML = `<span class="badge">Backend Offline</span><div>Pehle <code>node server.js</code> (port 5050) chala lo.</div>`;
       }
     });
+
+    applyScenario("infinite-loop");
   </script>
 </body>
 </html>
