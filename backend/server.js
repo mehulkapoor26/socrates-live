@@ -3,7 +3,11 @@ import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 5050;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+
+// Gemini Enterprise (Google Cloud) config via env vars
+const GE_ENDPOINT = process.env.GEMINI_ENTERPRISE_ENDPOINT || "";
+const GE_TOKEN = process.env.GEMINI_ENTERPRISE_TOKEN || "";
+const GE_API_KEY = process.env.GEMINI_API_KEY || "";
 
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
@@ -84,14 +88,15 @@ function findStarterIssue(code = "") {
   };
 }
 
-async function generateGeminiHint({ code, question, hintLevel, fallback }) {
-  if (!GEMINI_API_KEY) return null;
+// Routes through Gemini Enterprise (Google Cloud) endpoint when configured
+async function generateGeminiEnterpriseHint({ code, question, hintLevel, fallback }) {
+  if (!GE_ENDPOINT) return null;
 
   const prompt = `
-You are SocratesLive, a strict Socratic coding mentor.
+You are SocratesLive, a strict Socratic coding mentor on Gemini Enterprise.
 Rules:
 1. NEVER write full solution code or give the final answer directly.
-2. Give ONE short hint/question (max 2 short sentences) in simple Hinglish.
+2. Give ONE short hint/question (max 2 short sentences) in simple Hinglish or match student's language.
 3. Focus around line ${fallback.lineNumber} (${fallback.issueType}).
 4. ${getLevelGuidance(hintLevel)}
 
@@ -100,19 +105,31 @@ Code:
 ${code}
 `.trim();
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-  const resp = await fetch(url, {
+  const headers = { "Content-Type": "application/json" };
+  if (GE_TOKEN) {
+    headers.Authorization = `Bearer ${GE_TOKEN}`;
+  } else if (GE_API_KEY) {
+    headers["x-goog-api-key"] = GE_API_KEY;
+  }
+
+  const resp = await fetch(GE_ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }]
+      contents: [{ role: "user", parts: [{ text: prompt }] }]
     })
   });
 
   if (!resp.ok) return null;
   const data = await resp.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-  return text || null;
+
+  const text =
+    data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
+    data?.answer?.trim() ||
+    data?.reply?.trim() ||
+    null;
+
+  return text;
 }
 
 app.post("/api/hint", async (req, res) => {
@@ -130,7 +147,7 @@ app.post("/api/hint", async (req, res) => {
 
   let aiHint = null;
   try {
-    aiHint = await generateGeminiHint({
+    aiHint = await generateGeminiEnterpriseHint({
       code,
       question,
       hintLevel: clampedLevel,
@@ -150,6 +167,7 @@ app.post("/api/hint", async (req, res) => {
     lineNumber: found.lineNumber,
     issueType: found.issueType,
     hintLevel: clampedLevel,
+    provider: aiHint ? "gemini-enterprise" : "local-fallback",
     hint,
     nextPrompt: "Pehle khud ek chhota badlav karke try karo, phir batao kya hua."
   });
@@ -158,8 +176,8 @@ app.post("/api/hint", async (req, res) => {
 app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
-    service: "SocratesLive Base",
-    geminiEnabled: Boolean(GEMINI_API_KEY)
+    service: "SocratesLive",
+    geminiEnterpriseConfigured: Boolean(GE_ENDPOINT)
   });
 });
 
