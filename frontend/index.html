@@ -100,6 +100,10 @@
       color: #f8fafc;
       margin-bottom: 8px;
     }
+    .effort-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .effort-stat { background: #0f172a; border-radius: 8px; padding: 10px; }
+    .effort-stat strong { display: block; color: #38bdf8; font-size: 20px; }
+    .effort-stat span { color: #94a3b8; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -118,6 +122,19 @@ while (true) {
 }</textarea>
 
         <div class="preview-lines" id="codePreview"></div>
+      </div>
+
+      <div class="card">
+        <label for="sessionIdInput">Session Effort Report</label>
+        <input id="sessionIdInput" type="text" value="demo-session" aria-label="Session ID" />
+        <div class="row"><button id="refreshSummaryBtn" class="secondary">Refresh Report</button></div>
+        <div class="effort-grid" id="effortReport" aria-live="polite">
+          <div class="effort-stat"><strong>0</strong><span>Attempts</span></div>
+          <div class="effort-stat"><strong>0</strong><span>Hints used</span></div>
+          <div class="effort-stat"><strong>0</strong><span>Direct answers blocked</span></div>
+          <div class="effort-stat"><strong>—</strong><span>Effort score</span></div>
+        </div>
+        <p id="effortVerdict" class="sub">Your session summary will appear here.</p>
       </div>
 
       <div class="card">
@@ -144,6 +161,10 @@ while (true) {
     const hintOutput = document.getElementById("hintOutput");
     const getHintBtn = document.getElementById("getHintBtn");
     const resetLevelBtn = document.getElementById("resetLevelBtn");
+    const sessionIdInput = document.getElementById("sessionIdInput");
+    const effortReport = document.getElementById("effortReport");
+    const effortVerdict = document.getElementById("effortVerdict");
+    const refreshSummaryBtn = document.getElementById("refreshSummaryBtn");
 
     let currentHighlightLine = 2;
     let hintLevel = 1;
@@ -154,10 +175,7 @@ while (true) {
         .map((line, idx) => {
           const num = idx + 1;
           const cls = num === activeLine ? "line-item highlight" : "line-item";
-          const safeLine = line
-            .replace(/&/g, "&")
-            .replace(/</g, "<")
-            .replace(/>/g, ">");
+          const safeLine = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
           return `<div class="${cls}"><span class="line-num">${num}</span><span>${safeLine || " "}</span></div>`;
         })
         .join("");
@@ -165,6 +183,35 @@ while (true) {
 
     codeInput.addEventListener("input", () => renderCodePreview(currentHighlightLine));
     renderCodePreview(currentHighlightLine);
+
+    function renderEffort(summary) {
+      effortReport.innerHTML = `
+        <div class="effort-stat"><strong>${summary.attempts}</strong><span>Attempts</span></div>
+        <div class="effort-stat"><strong>${summary.hintsGiven}</strong><span>Hints used</span></div>
+        <div class="effort-stat"><strong>${summary.cheatingAttemptsBlocked}</strong><span>Direct answers blocked</span></div>
+        <div class="effort-stat"><strong>${summary.independentThinkingScore}/100</strong><span>Effort score</span></div>`;
+      effortVerdict.textContent = summary.verdict;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    async function refreshEffort(sessionSummary) {
+      if (sessionSummary && sessionSummary.sessionId === (sessionIdInput.value.trim() || "demo-session")) {
+        renderEffort(sessionSummary);
+        return;
+      }
+      const sessionId = encodeURIComponent(sessionIdInput.value.trim() || "demo-session");
+      const response = await fetch(`http://localhost:5050/api/summary/${sessionId}`);
+      if (!response.ok) throw new Error("Summary unavailable");
+      renderEffort(await response.json());
+    }
+
+    refreshSummaryBtn.addEventListener("click", async () => {
+      try { await refreshEffort(); }
+      catch (_err) { effortVerdict.textContent = "Summary fetch nahi ho saka. Backend port 5050 check karo."; }
+    });
 
     resetLevelBtn.addEventListener("click", () => {
       hintLevel = 1;
@@ -180,7 +227,8 @@ while (true) {
           body: JSON.stringify({
             code: codeInput.value,
             question: questionInput.value,
-            hintLevel
+            hintLevel,
+            sessionId: sessionIdInput.value.trim() || "demo-session"
           })
         });
         const data = await res.json();
@@ -197,9 +245,10 @@ while (true) {
 
         hintOutput.innerHTML = `
           <span class="badge">${tag}</span>
-          <div><strong>${data.hint}</strong></div>
-          <div style="margin-top:8px; color:#94a3b8; font-size:13px;">${data.nextPrompt}</div>
+          <div><strong>${escapeHtml(data.hint)}</strong></div>
+          <div style="margin-top:8px; color:#94a3b8; font-size:13px;">${escapeHtml(data.nextPrompt)}</div>
         `;
+        await refreshEffort(data.sessionSummary);
         hintLevel = Math.min(hintLevel + 1, 3);
       } catch (_err) {
         hintOutput.innerHTML = `<span class="badge">Backend Offline</span><div>Pehle <code>node server.js</code> (port 5050) chala lo.</div>`;
