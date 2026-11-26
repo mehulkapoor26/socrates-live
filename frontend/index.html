@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeriCode Studio — Academic Integrity & Socratic Lab</title>
+  <title>VeriCode Studio — Student & Faculty Login</title>
   <style>
     :root {
       --bg-base: #070b14;
@@ -11,7 +11,7 @@
       --bg-card: #121b30;
       --bg-input: #0b1120;
       --border-subtle: rgba(148, 163, 184, 0.14);
-      --border-strong: rgba(99, 102, 241, 0.42);
+      --border-strong: rgba(99, 102, 241, 0.45);
       --text-primary: #f8fafc;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
@@ -32,9 +32,7 @@
       --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -47,16 +45,66 @@
       font-family: var(--font-sans);
       font-size: 14px;
       line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
     }
 
-    .app-shell {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 18px 22px 52px;
+    .app-shell { max-width: 1320px; margin: 0 auto; padding: 18px 22px 52px; }
+
+    /* Login Gate */
+    .login-wrap {
+      min-height: calc(100vh - 90px);
+      display: grid;
+      place-items: center;
+      padding: 16px;
     }
 
-    /* Top Command Bar */
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .role-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 4px;
+      margin: 14px 0 16px;
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .role-tabs button {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .role-tabs button.active {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .field input { width: 100%; }
+
+    /* Top Bar */
     .topbar {
       position: sticky;
       top: 12px;
@@ -75,350 +123,168 @@
       box-shadow: var(--shadow-card);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
+    .brand { display: flex; align-items: center; gap: 12px; }
     .brand-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      display: grid;
-      place-items: center;
-      font-family: var(--font-mono);
-      font-weight: 800;
-      font-size: 15px;
-      color: #ffffff;
+      width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+      font-family: var(--font-mono); font-weight: 800; font-size: 15px; color: #fff;
       background: linear-gradient(135deg, #4f46e5, #06b6d4);
-      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
     }
+    .brand-title { margin: 0; font-size: 1.12rem; font-weight: 700; }
+    .brand-sub { margin: 1px 0 0; font-size: 0.78rem; color: var(--text-secondary); }
+    .toolbar-right { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 
-    .brand-title {
-      margin: 0;
-      font-size: 1.12rem;
-      font-weight: 700;
-      letter-spacing: -0.015em;
-    }
-
-    .brand-sub {
-      margin: 1px 0 0;
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-    }
-
-    .toolbar-right {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
+    .user-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+      background: var(--bg-elevated); border: 1px solid var(--border-subtle);
     }
 
     .live-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 6px 11px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: var(--success-bg);
-      color: var(--success-fg);
+      display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px;
+      border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+      background: var(--success-bg); color: var(--success-fg);
       border: 1px solid rgba(52, 211, 153, 0.28);
     }
-
-    .live-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--success-fg);
-    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success-fg); }
 
     .segmented {
-      display: inline-flex;
-      padding: 3px;
-      border-radius: var(--radius-md);
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
+      display: inline-flex; padding: 3px; border-radius: var(--radius-md);
+      background: var(--bg-input); border: 1px solid var(--border-subtle);
     }
-
     .segmented button {
-      border: 0;
-      background: transparent;
-      color: var(--text-secondary);
-      padding: 7px 14px;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.16s ease;
+      border: 0; background: transparent; color: var(--text-secondary);
+      padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
     }
+    .segmented button.active { background: var(--primary); color: #fff; }
 
-    .segmented button.active {
-      background: var(--primary);
-      color: #ffffff;
-      box-shadow: 0 2px 10px rgba(79, 70, 229, 0.35);
-    }
-
-    /* Inputs & Buttons */
     select, input, textarea {
-      background: var(--bg-input);
-      color: var(--text-primary);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 8px 12px;
-      font-family: var(--font-sans);
-      font-size: 0.86rem;
-      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      background: var(--bg-input); color: var(--text-primary);
+      border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+      padding: 8px 12px; font-family: var(--font-sans); font-size: 0.86rem;
     }
-
     select:focus, input:focus, textarea:focus {
-      outline: none;
-      border-color: var(--border-strong);
+      outline: none; border-color: var(--border-strong);
       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18);
     }
-
     textarea {
-      width: 100%;
-      min-height: 152px;
-      resize: vertical;
-      font-family: var(--font-mono);
-      font-size: 0.84rem;
-      line-height: 1.55;
+      width: 100%; min-height: 150px; resize: vertical;
+      font-family: var(--font-mono); font-size: 0.84rem; line-height: 1.55;
     }
 
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      border: 1px solid transparent;
-      border-radius: var(--radius-sm);
-      padding: 9px 14px;
-      font-size: 0.83rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.12s ease, background-color 0.16s ease, border-color 0.16s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      border: 1px solid transparent; border-radius: var(--radius-sm); padding: 9px 14px;
+      font-size: 0.83rem; font-weight: 600; cursor: pointer;
     }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-accent { background: linear-gradient(135deg, #4f46e5, #0891b2); color: #fff; }
+    .btn-ghost { background: var(--bg-elevated); color: var(--text-primary); border-color: var(--border-subtle); }
+    .btn-sm { padding: 6px 11px; font-size: 0.79rem; }
 
-    .btn:active {
-      transform: translateY(1px);
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #ffffff;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-accent {
-      background: linear-gradient(135deg, #4f46e5, #0891b2);
-      color: #ffffff;
-    }
-
-    .btn-ghost {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      border-color: var(--border-subtle);
-    }
-
-    .btn-ghost:hover {
-      border-color: rgba(148, 163, 184, 0.35);
-    }
-
-    .btn-sm {
-      padding: 6px 11px;
-      font-size: 0.79rem;
-    }
-
-    /* Layout Grid & Cards */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 18px;
-      margin-bottom: 18px;
-      align-items: start;
-    }
-
-    @media (max-width: 980px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    .main-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; margin-bottom: 18px; align-items: start; }
+    @media (max-width: 980px) { .main-grid { grid-template-columns: 1fr; } }
 
     .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 18px;
-      box-shadow: var(--shadow-card);
-      margin-bottom: 16px;
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-card); margin-bottom: 16px;
     }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .card-title { margin: 0; font-size: 0.96rem; font-weight: 700; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .card-title {
-      margin: 0;
-      font-size: 0.96rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    /* Code Inspector */
     .line-inspector {
-      margin-top: 12px;
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 8px 0;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      max-height: 215px;
-      overflow: auto;
+      margin-top: 12px; background: var(--bg-input); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md); padding: 8px 0; font-family: var(--font-mono);
+      font-size: 0.82rem; max-height: 215px; overflow: auto;
     }
+    .code-row { display: flex; gap: 14px; padding: 2px 14px; white-space: pre; }
+    .code-row .ln { min-width: 22px; text-align: right; color: var(--text-muted); user-select: none; }
+    .code-row.is-target { background: var(--danger-bg); border-left: 3px solid var(--danger-fg); padding-left: 11px; }
 
-    .code-row {
-      display: flex;
-      gap: 14px;
-      padding: 2px 14px;
-      white-space: pre;
-    }
-
-    .code-row .ln {
-      min-width: 22px;
-      text-align: right;
-      color: var(--text-muted);
-      user-select: none;
-    }
-
-    .code-row.is-target {
-      background: var(--danger-bg);
-      border-left: 3px solid var(--danger-fg);
-      padding-left: 11px;
-    }
-
-    .code-row.is-target .ln {
-      color: var(--danger-fg);
-      font-weight: 700;
-    }
-
-    /* Surface Callouts & Pills */
     .surface-box {
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: var(--radius-md);
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-subtle);
+      margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-md);
+      background: var(--bg-elevated); border: 1px solid var(--border-subtle);
     }
-
     .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 9px;
-      border-radius: 999px;
-      font-size: 0.71rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px;
+      font-size: 0.71rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
     }
-
     .pill-ok { background: var(--success-bg); color: var(--success-fg); }
     .pill-warn { background: var(--warn-bg); color: var(--warn-fg); }
     .pill-bad { background: var(--danger-bg); color: var(--danger-fg); }
 
     .rubric-row {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 12px;
-      margin-top: 8px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      padding: 10px 12px; margin-top: 8px; border-radius: var(--radius-sm);
+      background: var(--bg-input); border: 1px solid var(--border-subtle);
     }
+    .collab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 860px) { .collab-grid { grid-template-columns: 1fr; } }
 
-    .collab-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    @media (max-width: 860px) {
-      .collab-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .kpi-card {
-      padding: 14px;
-      border-radius: var(--radius-md);
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-subtle);
-    }
-
-    .kpi-value {
-      margin-top: 6px;
-      font-size: 1.5rem;
-      font-weight: 800;
-      font-family: var(--font-mono);
-    }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 12px; }
+    .kpi-card { padding: 14px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border-subtle); }
+    .kpi-value { margin-top: 6px; font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); }
 
     .muted { color: var(--text-secondary); font-size: 0.82rem; }
     .mono { font-family: var(--font-mono); }
     .hidden { display: none !important; }
 
-    /* Modal */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 60;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      background: rgba(2, 6, 23, 0.78);
-      backdrop-filter: blur(6px);
+      position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+      padding: 16px; background: rgba(2, 6, 23, 0.78); backdrop-filter: blur(6px);
     }
-
     .modal-box {
-      width: 100%;
-      max-width: 360px;
-      padding: 22px;
-      border-radius: var(--radius-lg);
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-card);
-      text-align: center;
+      width: 100%; max-width: 360px; padding: 22px; border-radius: var(--radius-lg);
+      background: var(--bg-card); border: 1px solid var(--border-subtle); text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
+  <!-- LOGIN GATE -->
+  <section id="loginScreen" class="login-wrap">
+    <div class="login-card">
+      <div class="brand">
+        <div class="brand-mark">VS</div>
+        <div>
+          <h1 class="brand-title">VeriCode Studio Login</h1>
+          <p class="brand-sub">Apna role chuno aur session start karo</p>
+        </div>
+      </div>
+
+      <div class="role-tabs" role="tablist">
+        <button id="roleBtnStudent" class="active" type="button">Student Login</button>
+        <button id="roleBtnFaculty" type="button">Faculty Login</button>
+      </div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label id="loginIdLabel" for="loginIdInput">Student ID</label>
+          <input id="loginIdInput" type="text" placeholder="e.g. 2410991234" required />
+        </div>
+        <div class="field">
+          <label for="loginNameInput">Display Name</label>
+          <input id="loginNameInput" type="text" placeholder="e.g. Prachi Verma" />
+        </div>
+        <div class="field">
+          <label for="loginPassInput">Access Key / PIN</label>
+          <input id="loginPassInput" type="password" placeholder="Demo PIN (e.g. 1234)" required />
+        </div>
+
+        <div id="loginError" class="pill pill-bad hidden" style="margin-bottom: 10px;"></div>
+
+        <button class="btn btn-primary" style="width: 100%;" type="submit">Continue to VeriCode Studio</button>
+
+        <div class="actions" style="justify-content: space-between; margin-top: 12px;">
+          <button id="demoStudentFill" class="btn btn-ghost btn-sm" type="button">Fill Demo Student</button>
+          <button id="demoFacultyFill" class="btn btn-ghost btn-sm" type="button">Fill Demo Faculty</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- MAIN WORKSPACE -->
+  <div id="workspaceShell" class="app-shell hidden">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">VS</div>
@@ -433,16 +299,17 @@
           <span class="live-dot"></span>
           <span>BACKEND ONLINE</span>
         </span>
+        <span id="activeUserChip" class="user-chip"></span>
         <select id="scenarioSelect" aria-label="Preset Scenario">
           <option value="loop">1. Infinite Loop &amp; Bounds</option>
           <option value="error">2. Missing Error &amp; Null Guard</option>
           <option value="viva">3. Viva Bluff Verification</option>
         </select>
-        <input id="studentIdInput" type="text" placeholder="Student ID (e.g. 2410991234)" style="width: 196px;" />
         <div class="segmented" role="tablist">
           <button id="tabStudent" class="active" type="button" role="tab">Student Lab</button>
           <button id="tabFaculty" type="button" role="tab">Faculty Console</button>
         </div>
+        <button id="logoutBtn" class="btn btn-ghost btn-sm" type="button">Logout</button>
       </div>
     </header>
 
@@ -451,7 +318,7 @@
         <section class="card">
           <div class="card-header">
             <h2 class="card-title">Code Workspace &amp; Target Line</h2>
-            <span class="muted mono">Live AST / Rule Check</span>
+            <span class="muted mono">Live Rule Check</span>
           </div>
 
           <textarea id="codeEditor" spellcheck="false"></textarea>
@@ -633,6 +500,8 @@
     };
 
     const state = {
+      loginRole: "student",
+      user: null, // { role: "student" | "faculty", id: string, name: string }
       sessionId: "demo-session",
       hintLevel: 1,
       attempts: 0,
@@ -649,15 +518,49 @@
 
     const $ = (id) => document.getElementById(id);
 
-    function getStudentId() {
-      const val = $("studentIdInput").value.trim();
-      return val || "STU-DEMO";
-    }
-
     function escapeHtml(str) {
       return String(str).replace(/[&<>"']/g, (m) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[m]));
+    }
+
+    function setLoginRoleTab(role) {
+      state.loginRole = role;
+      $("roleBtnStudent").classList.toggle("active", role === "student");
+      $("roleBtnFaculty").classList.toggle("active", role === "faculty");
+      $("loginIdLabel").textContent = role === "faculty" ? "Faculty ID" : "Student ID";
+      $("loginIdInput").placeholder = role === "faculty" ? "e.g. FAC-CSE-101" : "e.g. 2410991234";
+      $("loginError").classList.add("hidden");
+    }
+
+    function switchWorkspaceTab(view) {
+      if (view === "faculty" && state.user?.role !== "faculty") {
+        $("logoutBtn").click();
+        setLoginRoleTab("faculty");
+        $("loginError").textContent = "Faculty Console ke liye Faculty role se login karo.";
+        $("loginError").classList.remove("hidden");
+        return;
+      }
+      const isFaculty = view === "faculty";
+      $("tabFaculty").classList.toggle("active", isFaculty);
+      $("tabStudent").classList.toggle("active", !isFaculty);
+      $("facultyView").classList.toggle("hidden", !isFaculty);
+      $("studentView").classList.toggle("hidden", isFaculty);
+      if (isFaculty) loadCohortTelemetry();
+    }
+
+    function applyLoggedInUser(user) {
+      state.user = user;
+      sessionStorage.setItem("vericode_user", JSON.stringify(user));
+      $("loginScreen").classList.add("hidden");
+      $("workspaceShell").classList.remove("hidden");
+      const roleTag = user.role === "faculty" ? "FACULTY" : "STUDENT";
+      $("activeUserChip").textContent = `${roleTag}: ${user.name} (${user.id})`;
+      switchWorkspaceTab(user.role === "faculty" ? "faculty" : "student");
+    }
+
+    function getStudentId() {
+      return state.user?.id || "STU-DEMO";
     }
 
     function renderCodeLines(targetLine = state.targetLine) {
@@ -740,25 +643,50 @@
       $("qrModal").classList.remove("hidden");
     }
 
+    // Login handlers
+    $("roleBtnStudent").addEventListener("click", () => setLoginRoleTab("student"));
+    $("roleBtnFaculty").addEventListener("click", () => setLoginRoleTab("faculty"));
+
+    $("demoStudentFill").addEventListener("click", () => {
+      setLoginRoleTab("student");
+      $("loginIdInput").value = "2410991234";
+      $("loginNameInput").value = "Prachi Verma";
+      $("loginPassInput").value = "1234";
+    });
+
+    $("demoFacultyFill").addEventListener("click", () => {
+      setLoginRoleTab("faculty");
+      $("loginIdInput").value = "FAC-CSE-01";
+      $("loginNameInput").value = "Prof. Evaluation";
+      $("loginPassInput").value = "1234";
+    });
+
+    $("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = $("loginIdInput").value.trim();
+      const pass = $("loginPassInput").value.trim();
+      const name = $("loginNameInput").value.trim() || id;
+      if (!id || !pass) {
+        $("loginError").textContent = "ID aur Access Key dono zaroori hain.";
+        $("loginError").classList.remove("hidden");
+        return;
+      }
+      applyLoggedInUser({ role: state.loginRole, id, name });
+    });
+
+    $("logoutBtn").addEventListener("click", () => {
+      state.user = null;
+      sessionStorage.removeItem("vericode_user");
+      $("workspaceShell").classList.add("hidden");
+      $("loginScreen").classList.remove("hidden");
+    });
+
     $("scenarioSelect").addEventListener("change", (e) => loadScenario(e.target.value));
     $("codeEditor").addEventListener("input", () => renderCodeLines(state.targetLine));
     $("prevStepBtn").addEventListener("click", () => { state.stepIdx -= 1; renderStep(); });
     $("nextStepBtn").addEventListener("click", () => { state.stepIdx += 1; renderStep(); });
-
-    $("tabStudent").addEventListener("click", () => {
-      $("tabStudent").classList.add("active");
-      $("tabFaculty").classList.remove("active");
-      $("studentView").classList.remove("hidden");
-      $("facultyView").classList.add("hidden");
-    });
-
-    $("tabFaculty").addEventListener("click", async () => {
-      $("tabFaculty").classList.add("active");
-      $("tabStudent").classList.remove("active");
-      $("facultyView").classList.remove("hidden");
-      $("studentView").classList.add("hidden");
-      await loadCohortTelemetry();
-    });
+    $("tabStudent").addEventListener("click", () => switchWorkspaceTab("student"));
+    $("tabFaculty").addEventListener("click", () => switchWorkspaceTab("faculty"));
 
     $("getHintBtn").addEventListener("click", async () => {
       const resp = await fetch("/api/hint", {
@@ -845,7 +773,7 @@
         .join("\n") || "- Not run yet";
       const md = [
         "# VeriCode Studio Evaluation Report",
-        `- **Student ID:** ${getStudentId()}`,
+        `- **Student ID:** ${getStudentId()} (${state.user?.name || "User"})`,
         `- **Attempts:** ${state.attempts} | **Blocked Shortcuts:** ${state.blocked} | **Target Line:** ${state.targetLine}`,
         `- **Latest Hint:** ${state.lastHint || "N/A"}`,
         "",
@@ -1037,6 +965,13 @@
       const params = new URLSearchParams(window.location.search);
       if (params.get("group")) $("groupCodeInput").value = params.get("group");
       if (params.get("contest")) $("contestCodeInput").value = params.get("contest");
+
+      const saved = sessionStorage.getItem("vericode_user");
+      if (saved) {
+        try {
+          applyLoggedInUser(JSON.parse(saved));
+        } catch (_e) {}
+      }
     })();
   </script>
 </body>
