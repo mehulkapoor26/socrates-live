@@ -147,6 +147,15 @@ app.post("/api/hint", async (req, res) => {
   });
 });
 
+app.post("/api/audit", (req, res) => {
+  const { code = "", rubricPoints = [] } = req.body || {};
+  const analysis = analyzeSubmission({
+    code: typeof code === "string" ? code : String(code ?? ""),
+    rubricPoints: Array.isArray(rubricPoints) ? rubricPoints : []
+  });
+  return res.json(analysis);
+});
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "SocratesLive Base", geminiEnabled: Boolean(GEMINI_API_KEY) });
 });
